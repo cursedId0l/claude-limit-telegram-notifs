@@ -33,7 +33,7 @@ export class BotStack extends Stack {
     // Function URL gives the Lambda a public HTTPS endpoint
     const fnUrl = fn.addFunctionUrl({ authType: FunctionUrlAuthType.NONE });
 
-    // Prints the URL after deploy so you can register it as your Telegram webhook
-    new CfnOutput(this, "WebhookBaseUrl", { value: fnUrl.url });
+    // Prints the URL after deployment so you can update your .env
+    new CfnOutput(this, "LambdaBaseUrl", { value: fnUrl.url });
   }
 }
