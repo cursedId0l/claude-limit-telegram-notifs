@@ -1,0 +1,21 @@
+{
+  "name": "cdk",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "cdk": "cdk",
+    "deploy": "cdk deploy --require-approval never",
+    "bootstrap": "CDK_BOOTSTRAPPING=true cdk bootstrap",
+    "destroy": "cdk destroy"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.241.0",
+    "constructs": "10.5.1"
+  },
+  "devDependencies": {
+    "aws-cdk": "2.1109.0",
+    "esbuild": "0.27.3",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  }
+}
