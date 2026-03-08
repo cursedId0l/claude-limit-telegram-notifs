@@ -26,7 +26,7 @@ export class BotStack extends Stack {
       memorySize: 256,
       environment: {
         TELEGRAM_BOT_TOKEN: requireEnv("TELEGRAM_BOT_TOKEN"),
-        TELEGRAM_WEBHOOK_SECRET: requireEnv("TELEGRAM_WEBHOOK_SECRET"),
+        API_KEY: requireEnv("API_KEY"),
       },
     });
 

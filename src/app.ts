@@ -1,51 +1,26 @@
 import { Hono } from "hono";
-import { config, env, TwitterAction } from "./config.js";
-import { shouldPost } from "./filter.js";
-import { createTwitterClient, postTweet, sendDm } from "./twitter.js";
-import type { TelegramUpdate } from "./filter.js";
-
-const twitter = createTwitterClient(env);
+import { env } from "./config.js";
+import { sendMessage } from "./telegram.js";
 
 export function createApp(): Hono {
   const app = new Hono();
 
-  app.post("/webhook", async (c) => {
-    console.log("Telegram webhook received");
+  app.post("/message", async (c) => {
+    const secret = c.req.header("API_KEY");
+    if (secret !== env.API_KEY) return c.json({ error: "Unauthorized" }, 401);
 
-    const secret = c.req.header("X-Telegram-Bot-Api-Secret-Token");
-    if (secret !== env.TELEGRAM_WEBHOOK_SECRET) {
-      return c.json({ error: "Unauthorized" }, 401);
-    }
-
-    const update = (await c.req.json()) as TelegramUpdate;
-    const text = shouldPost(update, config);
-    console.log(1);
-    if (!text) return c.json({ ok: true });
-    console.log(2);
+    const { chatId, text } = await c.req.json();
+    if (!chatId || !text)
+      return c.json({ error: "Missing chatId or text" }, 400);
 
     try {
-      switch (config.twitter.action) {
-        case TwitterAction.DM:
-          await Promise.all(
-            config.twitter.recipientIds.map((id) => sendDm(twitter, id, text)),
-          );
-          console.log("DM sent:", text);
-          break;
-        case TwitterAction.TWEET:
-          await postTweet(twitter, text);
-          console.log("Tweet posted:", text);
-          break;
-        default:
-          throw new Error(
-            `Unknown twitter action: ${(config.twitter as { action: string }).action}`,
-          );
-      }
+      await sendMessage(chatId, text);
+      console.log(`Sent message to ${chatId}: ${text}`);
+      return c.json({ ok: true });
     } catch (err) {
-      // Log but return 200. If we return an error Telegram will retry the same message
-      console.error("Failed to post to Twitter:", text, err);
+      console.error("Failed to send Telegram message:", err);
+      return c.json({ error: "Failed to send message" }, 500);
     }
-
-    return c.json({ ok: true });
   });
 
   return app;
